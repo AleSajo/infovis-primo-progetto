@@ -51,6 +51,8 @@ new_row = {'anno':2017, 'idroelettrica':36198, 'eolica':17741, 'fotovoltaica':24
 new_df = pd.DataFrame([new_row])
 df = pd.concat([df, new_df],ignore_index=True)
 
+df.set_index('anno', inplace=True)
+
 print(df)
 
 
