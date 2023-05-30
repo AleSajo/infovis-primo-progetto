@@ -53,6 +53,8 @@ df = pd.concat([df, new_df],ignore_index=True)
 
 print(df)
 
-df.to_json("data.json", orient='index')
-df.to_csv("data.csv")
-df.to_excel("data.xlsx")
+
+
+df.to_json("data/dataset.json", orient='index')
+df.to_csv("data/dataset.csv")
+df.to_excel("data/dataset.xlsx")
