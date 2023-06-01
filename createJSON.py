@@ -56,7 +56,7 @@ df.set_index('anno', inplace=True)
 print(df)
 
 
-
-df.to_json("data/dataset.json", orient='index')
+# questo lo commento per ora perché esce una sintassi che non mi fa lavorare
+# df.to_json("data/dataset.json", orient='index')
 df.to_csv("data/dataset.csv")
 df.to_excel("data/dataset.xlsx")
