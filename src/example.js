@@ -17,6 +17,7 @@ var yScale = d3.scaleLinear()
   .range([0, 500]);
 
 // Create bars
+// ad ogni elemento 
 svg.selectAll("rect")
   .data(data)
   .enter().append("rect")
@@ -25,3 +26,4 @@ svg.selectAll("rect")
     .attr("y", function(d) { return 500 - yScale(d); })
     .attr("width", xScale.bandwidth())
     .attr("height", function(d) { return yScale(d); });
+
