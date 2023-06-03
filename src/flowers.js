@@ -14,14 +14,33 @@ var svgContainer = d3.select("body")
     .style("border-style", "solid")
     .style("background-color","#e8e8e8")
 
-function sortDataset() {
+// ordina il dataset sulla base dell'attributo specificato e disegna di nuovo i fiori
+function sortDataset(attributo) {
     d3.json("../data/dataset.json")
         .then(function(data) {
             //leggo il dataset, lo metto in un array di oggetti e lo ordino
+            console.log(dataset)    //qua deve essere vuoto
             dataset = data;
-            console.log(dataset);
-            dataset.sort((a,b) => a.idroelettrica - b.idroelettrica)
+            console.log(dataset);   //in-memory dataset
 
+            switch(attributo) {
+                case "idroelettrica":
+                    dataset.sort((a,b) => a.idroelettrica - b.idroelettrica);
+                    break;
+                case "eolica":
+                    dataset.sort((a,b) => a.eolica - b.eolica);
+                    break;
+                case "fotovoltaica":
+                    dataset.sort((a,b) => a.fotovoltaica - b.fotovoltaica);
+                    break;
+                case "geotermica":
+                    dataset.sort((a,b) => a.geotermica - b.geotermica);
+                    break;
+            }
+
+            console.log(dataset)    //sorted
+
+            //disegna di nuovo col dataset ordinato
             offset = 70;
             dataset.forEach(datacase => {
                 drawFlower(datacase, offset)
@@ -29,8 +48,9 @@ function sortDataset() {
             })
         })
         .catch(function(error) {
-
+            console.log(error); // Some error handling here
         })
+    
 }
 
 function drawFlower(datacase, offset) {
@@ -56,12 +76,9 @@ function drawFlower(datacase, offset) {
         .on("click", function() {
             console.log("Hai cliccato un'ellisse blu")
             svgContainer.selectAll("*").remove();
-            sortDataset();
+            sortDataset("idroelettrica");
             
             })
-    
-        
-
 
     // petalo eolica: verde
     svgContainer.append("ellipse")
@@ -75,6 +92,8 @@ function drawFlower(datacase, offset) {
         .style("stroke", "black")
         .on("click", function() {
             console.log("Hai cliccato un'ellisse verde")
+            svgContainer.selectAll("*").remove();
+            sortDataset("eolica");
         })
 
     // petalo fotovoltaica: giallo
@@ -89,6 +108,8 @@ function drawFlower(datacase, offset) {
         .style("stroke", "black")
         .on("click", function() {
             console.log("Hai cliccato un'ellisse gialla")
+            svgContainer.selectAll("*").remove();
+            sortDataset("fotovoltaica");
         })
 
     // petalo geotermica: rosso
@@ -103,16 +124,19 @@ function drawFlower(datacase, offset) {
         .style("stroke", "black")
         .on("click", function() {
             console.log("Hai cliccato un'ellisse rossa")
+            svgContainer.selectAll("*").remove();
+            sortDataset("geotermica");
         })
 
+    // etichette dell'asse x
     svgContainer.append("text")
         .text(datacase.anno)
         .attr("x", offset - 15)
         .attr("y", height - 10)
         .style("color", "black")
-
 }
 
+// disegno iniziale
 d3.json("../data/dataset.json")
     .then(function (data) {
         // Test su console
@@ -130,16 +154,12 @@ d3.json("../data/dataset.json")
         */
         // Fine console test
 
-
-
         offset = 70;
         data.forEach(datacase => {
             drawFlower(datacase, offset)
             offset += 120;
         })
-
         
-
     })
     .catch(function (error) {
         console.log(error); // Some error handling here
