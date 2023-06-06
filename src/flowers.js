@@ -2,9 +2,35 @@
 //array di oggetti in cui metterò il dataset
 var dataset = [];
 
+// set margins in a constant
+const margins = {
+    left: 20,
+    right: 20,
+    top: 20,
+    bottom: 20
+}
+
 // Set the dimensions of the SVG container
-var width = 1200;
-var height = 600;
+const width = window.innerWidth - margins.left;
+const height = window.innerHeight - margins.top;
+
+// set scales
+var yScale = d3.scaleLinear().range([0, height-0.2*height]);   // range della visualizzazione, poi dovrei aggiornare il domain quando disegno
+var xScale = d3.scaleBand().range([0, width]);  // range della visualizzazione, poi dovrei aggiornare il domain quando disegno
+
+
+
+// update scale domains
+function updateYScale(dataset) {
+    var maxTotalMW = 0;                 // compute the max domain value
+    dataset.forEach(datacase => {
+        var currentTotalMW = datacase.idroelettrica+datacase.eolica+datacase.fotovoltaica+datacase.geotermica;
+        if(currentTotalMW > maxTotalMW) {
+            maxTotalMW = currentTotalMW;
+        }
+    });
+    yScale.domain([0, maxTotalMW]);     // finally update domain
+}
 
 // Create an SVG container in the document body
 var svgContainer = d3.select("body")
@@ -41,10 +67,10 @@ function sortDataset(attributo) {
             console.log(dataset)    //sorted
 
             //disegna di nuovo col dataset ordinato
-            offset = 70;
+            offset = width/11;
             dataset.forEach(datacase => {
                 drawFlower(datacase, offset)
-                offset += 120;
+                offset += width/11;
             })
         })
         .catch(function(error) {
@@ -59,7 +85,7 @@ function drawFlower(datacase, offset) {
 
     var petalWidth = 14;
     var totalMW = datacase.idroelettrica+datacase.eolica+datacase.fotovoltaica+datacase.geotermica;
-    var flowerHeight = height - totalMW/200;    //altezza del singolo fiore dal basso
+    var flowerHeight = height - yScale(totalMW);    //altezza del singolo fiore dal basso
 
     // TODO: mettere ciascun fiore dentro a un <g>
 
@@ -154,12 +180,16 @@ d3.json("../data/dataset.json")
         */
         // Fine console test
 
-        offset = 70;
+        // aggiorniamo la yScale in base al dataset
+        updateYScale(data);
+
+        offset = width/11;
         data.forEach(datacase => {
             drawFlower(datacase, offset)
-            offset += 120;
+            offset += width/11;
         })
         
+
     })
     .catch(function (error) {
         console.log(error); // Some error handling here
