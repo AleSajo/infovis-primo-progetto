@@ -101,8 +101,12 @@ function drawFlower(datacase, offset) {
     var totalMW = datacase.idroelettrica+datacase.eolica+datacase.fotovoltaica+datacase.geotermica;
     var flowerHeight = height - yScale(totalMW);    //altezza del singolo fiore dal basso
 
+    svgContainer.append("g")
+        .attr("class", "flower"+datacase.anno)
+
     // petalo idroelettrica: blu
-    svgContainer.append("ellipse")
+    svgContainer.selectAll(".flower"+datacase.anno)
+        .append("ellipse")
         .attr("class", "ellipseBlu")
         .attr("cx", offset-xScalePetal(datacase.idroelettrica))
         .attr("cy", flowerHeight)
@@ -120,7 +124,8 @@ function drawFlower(datacase, offset) {
             })
 
     // petalo eolica: verde
-    svgContainer.append("ellipse")
+    svgContainer.selectAll(".flower"+datacase.anno)
+        .append("ellipse")
         .attr("class", "ellipseVerde")
         .attr("cx", offset-xScalePetal(datacase.eolica))
         .attr("cy", flowerHeight)
@@ -138,7 +143,8 @@ function drawFlower(datacase, offset) {
         })
 
     // petalo fotovoltaica: giallo
-    svgContainer.append("ellipse")
+    svgContainer.selectAll(".flower"+datacase.anno)
+        .append("ellipse")
         .attr("class", "ellipseGialla")
         .attr("cx", offset-xScalePetal(datacase.fotovoltaica))
         .attr("cy", flowerHeight)
@@ -156,7 +162,8 @@ function drawFlower(datacase, offset) {
         })
 
     // petalo geotermica: rosso
-    svgContainer.append("ellipse")
+    svgContainer.selectAll(".flower"+datacase.anno)
+        .append("ellipse")
         .attr("class", "ellipseRossa")
         .attr("cx", offset-xScalePetal(datacase.geotermica))
         .attr("cy", flowerHeight)
@@ -173,8 +180,17 @@ function drawFlower(datacase, offset) {
             sortDataset("geotermica");
         })
 
+    // etichetta sul totale dei MW
+    svgContainer.selectAll(".flower"+datacase.anno)
+        .append("text")
+        .text(totalMW+" MW")
+        .attr("x", offset - 15)
+        .attr("y", flowerHeight + 70)
+        .style("color", "black")
+
     // etichette dell'asse x
-    svgContainer.append("text")
+    svgContainer.selectAll(".flower"+datacase.anno)
+        .append("text")
         .text(datacase.anno)
         .attr("x", offset - 15)
         .attr("y", height - 10)
@@ -201,9 +217,10 @@ d3.json("../data/dataset.json")
 
         // aggiorniamo la yScale in base al dataset
         updateYScale(data);
-        // aggiorniamo la yScale del petalo
+        // aggiorniamo le scale dei petali
         updatePetalScales(data);
 
+        // l'offset è parametrico arbitrario rispetto alla dimensione della finestra
         offset = width/11;
         data.forEach(datacase => {
             drawFlower(datacase, offset)
