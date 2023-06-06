@@ -15,7 +15,7 @@ const width = window.innerWidth - margins.left;
 const height = window.innerHeight - margins.top;
 
 // set scales for svg
-var yScale = d3.scaleLinear().range([0, height-0.2*height]);   // range della visualizzazione, poi dovrei aggiornare il domain quando disegno
+var yScale = d3.scaleLinear().range([0, height-100]);   // range della visualizzazione, poi dovrei aggiornare il domain quando disegno
 var xScale = d3.scaleBand().range([0, width]);  // range della visualizzazione, poi dovrei aggiornare il domain quando disegno
 // set scales for flowers
 var yScalePetal = d3.scaleSqrt().range([0, 20]);      // da cambiare quasi sicuro
@@ -30,10 +30,10 @@ function updateYScale(dataset) {
             maxTotalMW = currentTotalMW;
         }
     });
-    yScale.domain([0, maxTotalMW]);     // finally update domain
+    yScale.domain([30000, maxTotalMW]);     // finally update domain (dominio ristretto per focus su parte alta della visualizzazione)
 }
 
-function updateYScalePetal(dataset) {
+function updatePetalScales(dataset) {
     maxValue = 0;
     dataset.forEach(datacase => {       // trovo il valore più grande in tutto il database
         tempMaxValue = d3.max([datacase.idroelettrica,datacase.eolica,datacase.fotovoltaica,datacase.geotermica])
@@ -104,7 +104,7 @@ function drawFlower(datacase, offset) {
     // petalo idroelettrica: blu
     svgContainer.append("ellipse")
         .attr("class", "ellipseBlu")
-        .attr("cx", offset-(datacase.idroelettrica / 1200))
+        .attr("cx", offset-xScalePetal(datacase.idroelettrica))
         .attr("cy", flowerHeight)
         //.attr("rx", datacase.idroelettrica / 1200)
         .attr("rx", xScalePetal(datacase.idroelettrica))
@@ -122,10 +122,12 @@ function drawFlower(datacase, offset) {
     // petalo eolica: verde
     svgContainer.append("ellipse")
         .attr("class", "ellipseVerde")
-        .attr("cx", offset-(datacase.eolica / 1000))
+        .attr("cx", offset-xScalePetal(datacase.eolica))
         .attr("cy", flowerHeight)
-        .attr("rx", datacase.eolica / 1000)
-        .attr("ry", petalWidth*(datacase.eolica / 15000))
+        //.attr("rx", datacase.eolica / 1000)
+        .attr("rx", xScalePetal(datacase.eolica))
+        //.attr("ry", petalWidth*(datacase.eolica / 15000))
+        .attr("ry", yScalePetal(datacase.eolica))
         .attr("transform", "rotate(135 " + offset + " " + (flowerHeight) + ")")
         .style("fill", "green")
         .style("stroke", "black")
@@ -138,10 +140,12 @@ function drawFlower(datacase, offset) {
     // petalo fotovoltaica: giallo
     svgContainer.append("ellipse")
         .attr("class", "ellipseGialla")
-        .attr("cx", offset-(datacase.fotovoltaica / 1000))
+        .attr("cx", offset-xScalePetal(datacase.fotovoltaica))
         .attr("cy", flowerHeight)
-        .attr("rx", datacase.fotovoltaica / 1000)
-        .attr("ry", petalWidth*(datacase.fotovoltaica / 30000))
+        //.attr("rx", datacase.fotovoltaica / 1000)
+        .attr("rx", xScalePetal(datacase.fotovoltaica))
+        //.attr("ry", petalWidth*(datacase.fotovoltaica / 30000))
+        .attr("ry", yScalePetal(datacase.fotovoltaica))
         .attr("transform", "rotate(225 " + offset + " " + (flowerHeight) + ")")
         .style("fill", "#e8be4a")
         .style("stroke", "black")
@@ -154,10 +158,12 @@ function drawFlower(datacase, offset) {
     // petalo geotermica: rosso
     svgContainer.append("ellipse")
         .attr("class", "ellipseRossa")
-        .attr("cx", offset-(datacase.geotermica / 1000))
+        .attr("cx", offset-xScalePetal(datacase.geotermica))
         .attr("cy", flowerHeight)
-        .attr("rx", datacase.geotermica / 1000)
-        .attr("ry", petalWidth*(datacase.geotermica / 15000))
+        //.attr("rx", datacase.geotermica / 1000)
+        .attr("rx", xScalePetal(datacase.geotermica))
+        //.attr("ry", petalWidth*(datacase.geotermica / 15000))
+        .attr("ry", yScalePetal(datacase.geotermica))
         .attr("transform", "rotate(315 " + offset + " " + (flowerHeight) + ")")
         .style("fill", "#c93934")
         .style("stroke", "black")
@@ -196,7 +202,7 @@ d3.json("../data/dataset.json")
         // aggiorniamo la yScale in base al dataset
         updateYScale(data);
         // aggiorniamo la yScale del petalo
-        updateYScalePetal(data);
+        updatePetalScales(data);
 
         offset = width/11;
         data.forEach(datacase => {
