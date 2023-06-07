@@ -1,5 +1,5 @@
 
-//array di oggetti in cui metterò il dataset
+// array di oggetti che userò in fase di ordinamento
 var dataset = [];
 
 // set margins in a constant
@@ -54,14 +54,13 @@ var svgContainer = d3.select("body")
     .style("border-style", "solid")
     .style("background-color", "#e8e8e8")
 
-// ordina il dataset sulla base dell'attributo specificato e disegna di nuovo i fiori
-function sortDataset(attributo) {
+// ordina i fiori con transizioni
+function moveFlowersWithTransition(attributo) {
     d3.json("../data/dataset.json")
         .then(function (data) {
             //leggo il dataset, lo metto in un array di oggetti e lo ordino
-            console.log(dataset)    //qua deve essere vuoto
             dataset = data;
-            console.log(dataset);   //in-memory dataset
+            console.log(dataset);   // mi aspetto dataset originale
 
             switch (attributo) {
                 case "idroelettrica":
@@ -78,109 +77,56 @@ function sortDataset(attributo) {
                     break;
             }
 
-            console.log(dataset)    //sorted
+            console.log(dataset)    // mi aspetto dataset ordinato
 
-            //disegna di nuovo col dataset ordinato
             offset = width / 11;
-            dataset.forEach(datacase => {
-                drawFlower(datacase, offset)
-                offset += width / 11;
-            })
-        })
-        .catch(function (error) {
-            console.log(error); // Some error handling here
-        })
-
-}
-
-function moveFlowersWithTransition(attributo) {      // manca il parametro attributo per l'ordinamento
-    var selection = d3.selectAll("g");
-    console.log(selection);
-    /*
-        Per fare la transition potremmo provare a calcolare i nuovi offset per ciascun elemento
-        quindi copio qua sotto il codice del sortDataset per modificarlo, e comunque la fase di
-        ordinamento c'è per forza.
-        Poi dovrei provare a fare la transition sugli elementi già esistenti, per cui prendendo
-        ciascun flower2008, flower2009 etc... dovrei mettergli transition con il cambio della
-        coordinata x. 
-    */
-    d3.json("../data/dataset.json")
-        .then(function (data) {
-            //leggo il dataset, lo metto in un array di oggetti e lo ordino
-            console.log(dataset)    //qua deve essere vuoto
-            dataset = data;
-            console.log(dataset);   //in-memory dataset
-
-            switch (attributo) {
-                case "idroelettrica":
-                    dataset.sort((a, b) => a.idroelettrica - b.idroelettrica);
-                    break;
-                case "eolica":
-                    dataset.sort((a, b) => a.eolica - b.eolica);
-                    break;
-                case "fotovoltaica":
-                    dataset.sort((a, b) => a.fotovoltaica - b.fotovoltaica);
-                    break;
-                case "geotermica":
-                    dataset.sort((a, b) => a.geotermica - b.geotermica);
-                    break;
-            }
-
-            console.log(dataset)    //sorted
-
-            // qui anziché disegnare il nuovo dataset dovrei calcolare l'offset di ciascun elemento <g>
-            // ed applicarlo con una transition su ciascun elemento
-            offset = width / 11;
+            // nel seguente blocco, per ogni datacase, aggiorno con una transition la coordinata x
+            // di ciascun elemento del gruppo e la rotazione, che dipende a sua volta dall'offset
             dataset.forEach(datacase => {
                 var totalMW = datacase.idroelettrica + datacase.eolica + datacase.fotovoltaica + datacase.geotermica;
                 var flowerHeight = height - yScale(totalMW);
 
-                // qua dentro dovrei spostare l'attributo cx per ogni petalo del fiore
+                // petalo blu: idroelettrica
                 d3.select("body").select("svg").select(".flower"+datacase.anno).select(".ellipseBlu")
                     .transition().duration(300)
                     .attr("cx",offset - xScalePetal(datacase.idroelettrica))
                     .attr("transform", "rotate(45 " + offset + " " + (flowerHeight) + ")")
-                
+                // petalo verde: eolica
                 d3.select("body").select("svg").select(".flower"+datacase.anno).select(".ellipseVerde")
                     .transition().duration(300)
                     .attr("cx",offset - xScalePetal(datacase.eolica))
                     .attr("transform", "rotate(135 " + offset + " " + (flowerHeight) + ")")
-                
+                // petalo giallo: fotovoltaica
                 d3.select("body").select("svg").select(".flower"+datacase.anno).select(".ellipseGialla")
                     .transition().duration(300)
                     .attr("cx",offset - xScalePetal(datacase.fotovoltaica))
                     .attr("transform", "rotate(225 " + offset + " " + (flowerHeight) + ")") 
-                    
+                  // petalorosso: geotermica  
                 d3.select("body").select("svg").select(".flower"+datacase.anno).select(".ellipseRossa")
                     .transition().duration(300)
                     .attr("cx",offset - xScalePetal(datacase.geotermica))
                     .attr("transform", "rotate(315 " + offset + " " + (flowerHeight) + ")")
-
                 // qui transition del totalMW
                 d3.select("body").select("svg").select(".flower"+datacase.anno).select(".totalMW")
                     .transition().duration(300)
                     .attr("x", offset - 35)
-
-                //qui transition dell'anno
+                // qui transition dell'anno
                 d3.select("body").select("svg").select(".flower"+datacase.anno).select(".yearLabel")
                     .transition().duration(300)
                     .attr("x", offset - 15)
-                
+                // aggiorno l'offset
                 offset += width / 11;
             })
         })
         .catch(function (error) {
             console.log(error); // Some error handling here
         })
-
-
 }
 
 function drawFlower(datacase, offset) {
 
-    var petalWidth = 14;
     var totalMW = datacase.idroelettrica + datacase.eolica + datacase.fotovoltaica + datacase.geotermica;
-    var flowerHeight = height - yScale(totalMW);    //altezza del singolo fiore dal basso
+    var flowerHeight = height - yScale(totalMW);    // altezza del singolo fiore dal basso
 
     svgContainer.append("g")
         .attr("class", "flower" + datacase.anno)
@@ -191,20 +137,13 @@ function drawFlower(datacase, offset) {
         .attr("class", "ellipseBlu")
         .attr("cx", offset - xScalePetal(datacase.idroelettrica))
         .attr("cy", flowerHeight)
-        //.attr("rx", datacase.idroelettrica / 1200)
         .attr("rx", xScalePetal(datacase.idroelettrica))
-        //.attr("ry", petalWidth*(datacase.idroelettrica / 30000))
         .attr("ry", yScalePetal(datacase.idroelettrica))
         .attr("transform", "rotate(45 " + offset + " " + (flowerHeight) + ")")
         .style("fill", "#3e59f0")
         .style("stroke", "black")
         .on("click", function () {
             console.log("Hai cliccato un'ellisse blu")
-            // QUI MOMENTANEAMENTE TOGLIAMO IL SORTING VECCHIO
-            //svgContainer.selectAll("*").remove();
-            //sortDataset("idroelettrica");
-
-            // QUI INSERIAMO IL METODO NUOVO PER TESTARE LA TRANSITION
             moveFlowersWithTransition("idroelettrica");
         })
 
@@ -214,9 +153,7 @@ function drawFlower(datacase, offset) {
         .attr("class", "ellipseVerde")
         .attr("cx", offset - xScalePetal(datacase.eolica))
         .attr("cy", flowerHeight)
-        //.attr("rx", datacase.eolica / 1000)
         .attr("rx", xScalePetal(datacase.eolica))
-        //.attr("ry", petalWidth*(datacase.eolica / 15000))
         .attr("ry", yScalePetal(datacase.eolica))
         .attr("transform", "rotate(135 " + offset + " " + (flowerHeight) + ")")
         .style("fill", "green")
@@ -232,9 +169,7 @@ function drawFlower(datacase, offset) {
         .attr("class", "ellipseGialla")
         .attr("cx", offset - xScalePetal(datacase.fotovoltaica))
         .attr("cy", flowerHeight)
-        //.attr("rx", datacase.fotovoltaica / 1000)
         .attr("rx", xScalePetal(datacase.fotovoltaica))
-        //.attr("ry", petalWidth*(datacase.fotovoltaica / 30000))
         .attr("ry", yScalePetal(datacase.fotovoltaica))
         .attr("transform", "rotate(225 " + offset + " " + (flowerHeight) + ")")
         .style("fill", "#e8be4a")
@@ -250,9 +185,7 @@ function drawFlower(datacase, offset) {
         .attr("class", "ellipseRossa")
         .attr("cx", offset - xScalePetal(datacase.geotermica))
         .attr("cy", flowerHeight)
-        //.attr("rx", datacase.geotermica / 1000)
         .attr("rx", xScalePetal(datacase.geotermica))
-        //.attr("ry", petalWidth*(datacase.geotermica / 15000))
         .attr("ry", yScalePetal(datacase.geotermica))
         .attr("transform", "rotate(315 " + offset + " " + (flowerHeight) + ")")
         .style("fill", "#c93934")
@@ -271,7 +204,7 @@ function drawFlower(datacase, offset) {
         .attr("y", flowerHeight + 70)
         .style("color", "black")
 
-    // etichette dell'asse x
+    // etichette sull'asse x
     svgContainer.selectAll(".flower" + datacase.anno)
         .append("text")
         .attr("class","yearLabel")
@@ -284,20 +217,6 @@ function drawFlower(datacase, offset) {
 // disegno iniziale
 d3.json("../data/dataset.json")
     .then(function (data) {
-        // Test su console
-        /*
-        console.log(data)
-        console.log(data[0])
-        console.log(data[0]["anno"])
-        console.log("Idroelettrica: " + data[0]["idroelettrica"])
-        console.log(Object.keys(data[0]))
-        propertyValues = Object.keys(data[0])
-        console.log(propertyValues)
-        propertyValues.forEach(proprertyValue => {
-            console.log(proprertyValue)
-        });
-        */
-        // Fine console test
 
         // aggiorniamo la yScale in base al dataset
         updateYScale(data);
@@ -310,7 +229,6 @@ d3.json("../data/dataset.json")
             drawFlower(datacase, offset)
             offset += width / 11;
         })
-
 
     })
     .catch(function (error) {
